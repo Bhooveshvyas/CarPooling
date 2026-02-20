@@ -8,7 +8,10 @@ const connectDB = async () => {
 
     console.log("URI:", process.env.MONGO_URI); // temporary debug
 
-    const conn = await mongoose.connect(process.env.MONGO_URI);
+    const conn = await mongoose.connect(process.env.MONGO_URI, {
+      family: 4, // Force IPv4
+      serverSelectionTimeoutMS: 5000
+    });
 
     console.log(`Mongo Connected: ${conn.connection.host}`);
 
