@@ -47,7 +47,7 @@ router.post("/offer-ride", async (req, res) => {
     });
 
     await ride.save();
-    res.status(201).json({ message: "Ride created", ride });
+    res.status(201).json({ message: "Ridee created", ride });
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
