@@ -11,7 +11,7 @@ const asyncHandler = (fn) => (req, res, next) => {
 // Helper function to create and send token
 const createSendToken = (user, statusCode, res, message = 'Success') => {
   const token = user.generateAuthToken();
-  
+
   const cookieOptions = {
     expires: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
     httpOnly: true,
@@ -28,9 +28,9 @@ const createSendToken = (user, statusCode, res, message = 'Success') => {
     success: true,
     message,
     token,
-    user: { 
-      id: user._id, 
-      name: user.name, 
+    user: {
+      id: user._id,
+      name: user.name,
       email: user.email,
       createdAt: user.createdAt
     }
@@ -43,9 +43,9 @@ export const registerUser = asyncHandler(async (req, res) => {
   // Check if user already exists
   const existingUser = await User.findOne({ email });
   if (existingUser) {
-    return res.status(409).json({ 
+    return res.status(409).json({
       success: false,
-      message: 'User with this email already exists' 
+      message: 'User with this email already exists'
     });
   }
 
@@ -60,28 +60,28 @@ export const loginUser = asyncHandler(async (req, res) => {
 
   // Find user and explicitly select password
   const user = await User.findOne({ email }).select('+password');
-  
+
   if (!user) {
-    return res.status(401).json({ 
+    return res.status(401).json({
       success: false,
-      message: 'Invalid email or password' 
+      message: 'Invalid email or password'
     });
   }
 
   // Prevent password login for Google accounts
   if (user.password === 'GOOGLE_AUTH') {
-    return res.status(400).json({ 
+    return res.status(400).json({
       success: false,
-      message: 'Please login with Google for this account.' 
+      message: 'Please login with Google for this account.'
     });
   }
 
   // Check password
   const isPasswordCorrect = await user.comparePassword(password);
   if (!isPasswordCorrect) {
-    return res.status(401).json({ 
+    return res.status(401).json({
       success: false,
-      message: 'Invalid email or password' 
+      message: 'Invalid email or password'
     });
   }
 
@@ -91,11 +91,11 @@ export const loginUser = asyncHandler(async (req, res) => {
 export const getUserProfile = asyncHandler(async (req, res) => {
   // req.user is set by the auth middleware
   const user = await User.findById(req.user._id).select('-password');
-  
+
   if (!user) {
-    return res.status(404).json({ 
+    return res.status(404).json({
       success: false,
-      message: 'User not found' 
+      message: 'User not found'
     });
   }
 
@@ -110,7 +110,7 @@ export const logoutUser = asyncHandler(async (req, res) => {
     expires: new Date(Date.now() + 10 * 1000),
     httpOnly: true
   });
-  
+
   res.status(200).json({
     success: true,
     message: 'Logged out successfully'
@@ -119,10 +119,10 @@ export const logoutUser = asyncHandler(async (req, res) => {
 
 export const updatePassword = asyncHandler(async (req, res) => {
   const { currentPassword, newPassword } = req.body;
-  
+
   // Get user with password
   const user = await User.findById(req.user._id).select('+password');
-  
+
   // Check current password
   if (!(await user.comparePassword(currentPassword))) {
     return res.status(400).json({
@@ -130,11 +130,11 @@ export const updatePassword = asyncHandler(async (req, res) => {
       message: 'Current password is incorrect'
     });
   }
-  
+
   // Update password
   user.password = newPassword;
   await user.save();
-  
+
   createSendToken(user, 200, res, 'Password updated successfully');
 });
 
