@@ -49,7 +49,6 @@ export const registerUser = asyncHandler(async (req, res) => {
     });
   }
 
-  // Create new user
   const newUser = await User.create({ name, email, password });
 
   createSendToken(newUser, 201, res, 'User registered successfully');
