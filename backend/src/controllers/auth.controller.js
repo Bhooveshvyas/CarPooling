@@ -1,14 +1,11 @@
-// backend/controllers/authController.js
 import User from '../models/user.model.js';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 
-// Async error handler
 const asyncHandler = (fn) => (req, res, next) => {
   Promise.resolve(fn(req, res, next)).catch(next);
 };
 
-// Helper function to create and send token
 const createSendToken = (user, statusCode, res, message = 'Success') => {
   const token = user.generateAuthToken();
 
@@ -21,7 +18,6 @@ const createSendToken = (user, statusCode, res, message = 'Success') => {
 
   res.cookie('jwt', token, cookieOptions);
 
-  // Remove password from output
   user.password = undefined;
 
   res.status(statusCode).json({
@@ -40,7 +36,6 @@ const createSendToken = (user, statusCode, res, message = 'Success') => {
 export const registerUser = asyncHandler(async (req, res) => {
   const { name, email, password } = req.body;
 
-  // Check if user already exists
   const existingUser = await User.findOne({ email });
   if (existingUser) {
     return res.status(409).json({
@@ -57,7 +52,6 @@ export const registerUser = asyncHandler(async (req, res) => {
 export const loginUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
-  // Find user and explicitly select password
   const user = await User.findOne({ email }).select('+password');
 
   if (!user) {
@@ -67,7 +61,6 @@ export const loginUser = asyncHandler(async (req, res) => {
     });
   }
 
-  // Prevent password login for Google accounts
   if (user.password === 'GOOGLE_AUTH') {
     return res.status(400).json({
       success: false,
@@ -75,7 +68,6 @@ export const loginUser = asyncHandler(async (req, res) => {
     });
   }
 
-  // Check password
   const isPasswordCorrect = await user.comparePassword(password);
   if (!isPasswordCorrect) {
     return res.status(401).json({
@@ -88,7 +80,6 @@ export const loginUser = asyncHandler(async (req, res) => {
 });
 
 export const getUserProfile = asyncHandler(async (req, res) => {
-  // req.user is set by the auth middleware
   const user = await User.findById(req.user._id).select('-password');
 
   if (!user) {
@@ -119,10 +110,8 @@ export const logoutUser = asyncHandler(async (req, res) => {
 export const updatePassword = asyncHandler(async (req, res) => {
   const { currentPassword, newPassword } = req.body;
 
-  // Get user with password
   const user = await User.findById(req.user._id).select('+password');
 
-  // Check current password
   if (!(await user.comparePassword(currentPassword))) {
     return res.status(400).json({
       success: false,
@@ -130,7 +119,6 @@ export const updatePassword = asyncHandler(async (req, res) => {
     });
   }
 
-  // Update password
   user.password = newPassword;
   await user.save();
 
@@ -138,8 +126,6 @@ export const updatePassword = asyncHandler(async (req, res) => {
 });
 
 export const forgotPassword = asyncHandler(async (req, res) => {
-  // This is a placeholder for forgot password functionality
-  // You would typically send an email with a reset token here
   res.status(200).json({
     success: true,
     message: 'Password reset functionality will be implemented soon'
